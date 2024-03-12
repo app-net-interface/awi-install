@@ -21,7 +21,7 @@ In order to install AWI, the following things needs to be installed:
     other tool or external cluster from AWS/GCP etc. which you will have access
     with your kubectl
 * go compiler - for initializing kubernetes operator (if needed)
-* access to `ausm` repositories
+* access to `app-net-interface` repositories
 
 You need to install python3 dependencies for your project. You can do it by running
 
