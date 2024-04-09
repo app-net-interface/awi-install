@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: awi-infra-config
+data:
+  config.yaml: |
+    port: {{ .Values.configs.awiInfraGuard.targetPort }}
+    dbFileName: "infra.db"
+    useLocalDB: true
+    syncWaitTime: "60s"
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: awi-infra-guard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: awi-infra-guard
+  template:
+    metadata:
+      labels:
+        app: awi-infra-guard
+    spec:
+{{- if .Values.registry.isPrivate }}
+      imagePullSecrets:
+      - name: {{ .Values.registry.registryName }}
+{{- end }}
+      containers:
+      - name: awi-infra-guard
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /app/gcp-key/gcp-key.json
+        image: {{ .Values.registry.address }}/awi-infra-guard:{{ .Values.version }}
+        volumeMounts:
+        - name: config-volume
+          mountPath: "/root/config/"
+        - name: aws-cred-volume
+          mountPath: "/root/.aws/"
+        - name: gcp-cred-volume
+          mountPath: "/app/gcp-key/"
+        - name: kube-config-volume
+          mountPath: "/root/.kube/"
+      volumes:
+      - name: config-volume
+        configMap:
+          name: awi-infra-config
+          items:
+          - key: config.yaml
+            path: config.yaml
+      - name: aws-cred-volume
+        secret:
+          secretName: aws-credentials
+      - name: gcp-cred-volume
+        secret:
+          secretName: gcp-credentials
+      - name: kube-config-volume
+        secret:
+          secretName: kube-config
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: awi-infra-guard
+spec:
+  type: ClusterIP
+  selector:
+    app: awi-infra-guard
+  ports:
+    - protocol: TCP
+      port: {{ .Values.configs.awiInfraGuard.port }}
+      targetPort: {{ .Values.configs.awiInfraGuard.targetPort }}

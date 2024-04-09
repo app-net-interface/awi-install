@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: awi-grpc-catalyst-sdwan-config
+data:
+  config.yaml: |
+    controllers:
+      sdwan:
+        controller_connection_retries: {{ .Values.configs.awiGrpcCatalystSdwan.sdwan.controller_connection_retries }}
+        name: {{ .Values.configs.awiGrpcCatalystSdwan.sdwan.name }}
+        retries_interval: {{ .Values.configs.awiGrpcCatalystSdwan.sdwan.retries_interval }}
+        secure_connection: {{ .Values.configs.awiGrpcCatalystSdwan.sdwan.secure_connection }}
+        url: {{ .Values.configs.awiGrpcCatalystSdwan.sdwan.url }}
+        vendor: {{ .Values.configs.awiGrpcCatalystSdwan.sdwan.vendor }}
+    globals:
+      hostname: {{ .Values.configs.awiGrpcCatalystSdwan.hostname }}
+      port: {{ .Values.configs.awiGrpcCatalystSdwan.targetPort }}
+      controller_connection_retries: {{ .Values.configs.awiGrpcCatalystSdwan.controller_connection_retries }}
+      db_name: {{ .Values.configs.awiGrpcCatalystSdwan.db_name }}
+      log_file: {{ .Values.configs.awiGrpcCatalystSdwan.log_file }}
+      log_level: {{ .Values.configs.awiGrpcCatalystSdwan.log_level }}
+      retries_interval: {{ .Values.configs.awiGrpcCatalystSdwan.retries_interval }}
+      secure_connection: {{ .Values.configs.awiGrpcCatalystSdwan.secure_connection }}
+      kube_config_file: {{ .Values.configs.awiGrpcCatalystSdwan.kube_config_file }}
+      network_domain_connector: {{ .Values.configs.awiGrpcCatalystSdwan.connector }}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: awi-grpc-catalyst-sdwan
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: awi-grpc-catalyst-sdwan
+  template:
+    metadata:
+      labels:
+        app: awi-grpc-catalyst-sdwan
+    spec:
+{{- if .Values.registry.isPrivate }}
+      imagePullSecrets:
+      - name: {{ .Values.registry.registryName }}
+{{- end }}
+      containers:
+      - name: awi-grpc-catalyst-sdwan
+        image: {{ .Values.registry.address }}/awi-grpc-catalyst-sdwan:{{ .Values.version }}
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /app/gcp-key/gcp-key.json 
+        - name: CATALYST_SDWAN_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: catalyst-sdwan-credentials
+              key: username
+        - name: CATALYST_SDWAN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: catalyst-sdwan-credentials
+              key: password
+        volumeMounts:
+        - name: config-volume
+          mountPath: "/root/config/"
+        - name: aws-cred-volume
+          mountPath: "/root/.aws/"
+        - name: gcp-cred-volume
+          mountPath: "/app/gcp-key/"
+        - name: kube-config-volume
+          mountPath: "/root/.kube/"
+      volumes:
+      - name: config-volume
+        configMap:
+          name: awi-grpc-catalyst-sdwan-config
+          items:
+          - key: config.yaml
+            path: config.yaml
+      - name: aws-cred-volume
+        secret:
+          secretName: aws-credentials
+      - name: gcp-cred-volume
+        secret:
+          secretName: gcp-credentials
+      - name: kube-config-volume
+        secret:
+          secretName: kube-config
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: awi-grpc-catalyst-sdwan
+spec:
+  type: ClusterIP
+  selector:
+    app: awi-grpc-catalyst-sdwan
+  ports:
+    - protocol: TCP
+      port: {{ .Values.configs.awiGrpcCatalystSdwan.port }}
+      targetPort: {{ .Values.configs.awiGrpcCatalystSdwan.targetPort }}

@@ -10,40 +10,15 @@ class Configuration():
         """
         cls._helper = {}
 
-        cls.bool_env(
-            'AWI_ENABLE_UI',
-            default=True,
-            help='Setting - If set to false, the UI application will not be created',
-        )
-        cls.bool_env(
-            'AWI_ENABLE_K8S_OPERATOR',
-            default=True,
-            help='Setting - If set to false, the kube awi operator will not be created',
-        )
         cls.str_env(
-            'AWI_K8S_NAMESPACE',
-            default='awi-system',
-            help='Setting - The namespace, where AWI system will be installed',
-        )
-        cls.str_env(
-            'AWI_K8S_CONTROLLER_CTX_FILE',
-            default=os.path.expandvars('$HOME/.kube/config'),
-            help='Setting - The kube config file for the cluster, where AWI will be installed',
-        )
-        cls.bool_env(
-            'AWI_K8S_PURGE',
-            default=False,
-            help='Setting - If set to true, the script will clean up the namespace before installing AWI',
-        )
-        cls.str_env(
-            'AWI_VMANAGE_USERNAME',
+            'AWI_CATALYST_SDWAN_USERNAME',
             default='',
-            help='VManage - Username for VManage SDK Client',
+            help='Catalyst SDWAN - Username for Catalyst SDWAN SDK Client',
         )
         cls.str_env(
-            'AWI_VMANAGE_PASSWORD',
+            'AWI_CATALYST_SDWAN_PASSWORD',
             default='',
-            help='VManage - Password for VManage SDK Client',
+            help='Catalyst SDWAN - Password for Catalyst SDWAN SDK Client',
         )
         cls.str_env(
             'AWI_K8S_CTX_FILE',
@@ -76,10 +51,6 @@ class Configuration():
         cls._env("str", key, default, help)
 
     @classmethod
-    def bool_env(cls, key, default, help):
-        cls._env("bool", key, default, help)
-
-    @classmethod
     def _env(cls, attr, key, default, help):
         setattr(cls, key, getattr(env, attr)(key, default=default))
         cls._helper[key] = {
@@ -89,7 +60,7 @@ class Configuration():
 
     @classmethod
     def print_help(cls):
-        print("The script for AWI Installation.")
+        print("The script for generating secrets.")
         print("To configure it, set the environment variables.")
         print("")
         for key in cls._helper:

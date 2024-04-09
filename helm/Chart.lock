@@ -1,0 +1,6 @@
+dependencies:
+- name: awi-operator
+  repository: file://../awi-operator
+  version: 0.1.0
+digest: sha256:21a913979011049b01df10cd8750fcf9f8296d0c1421018beb3821be89658132
+generated: "2024-04-08T19:06:52.226409283+02:00"
