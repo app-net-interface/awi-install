@@ -69,6 +69,25 @@ Current App Net Interface defines following secrets.
 Currently, there are no mandatory credentials. Depending on the App Net
 Interface configuration, some of them are required and some not.
 
+### Python script
+
+To not create all scripts manually, there is a python script
+`generate_secrets.py` which can be used to automatically render and
+deploy necessary secrets.
+
+```
+AWI_GCP_CREDENTIALS_FILE="PATH_TO_JSON_FILE" python3 generate_secrets.py
+```
+
+To view the list of available arguments run:
+
+```
+python3 generate_secrets.py --help
+```
+
+Currently, script names are not customizable, they are expected to be
+named as described below.
+
 ### Catalyst SDWAN Credentials
 
 Needed when App Net Interface uses Catalyst SDWAN as a connector
