@@ -1,0 +1,65 @@
+{{- if .Values.components.ui }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: awi-ui-config
+data:
+  # set this value to stub to use fake DB
+  REACT_APP_BUILD: live
+  REACT_APP_IP2LOCATION_ENDPOINT: 'https://api.ip2location.io/'
+  # Change it to match the location of your awi grpc controller.
+  REACT_APP_CONTROLLER_ADDRESS: http://127.0.0.1:8080
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: awi-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: awi-ui
+  template:
+    metadata:
+      labels:
+        app: awi-ui
+    spec:
+{{- if .Values.registry.isPrivate }}
+      imagePullSecrets:
+      - name: {{ .Values.registry.registryName }}
+{{- end }}
+      containers:
+      - name: awi-ui
+        image: {{ .Values.registry.address }}/awi-ui:{{ .Values.version }}
+        envFrom:
+        - configMapRef:
+            name: awi-ui-config
+        env:
+        - name: REACT_APP_GOOGLE_MAPS_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: awi-ui-keys
+              key: google_maps_api_key
+        - name: REACT_APP_IP2LOCATION_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: awi-ui-keys
+              key: ip2_location_api_key
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: awi-ui
+spec:
+  type: ClusterIP
+  selector:
+    app: awi-ui
+  ports:
+    - protocol: TCP
+      port: {{ .Values.configs.ui.port }}
+      targetPort: {{ .Values.configs.ui.targetPort }}
+{{- end }}

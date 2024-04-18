@@ -21,8 +21,8 @@ def apply_secrets(k8s_client, awi_config):
     k8s_client.apply_template_manifest(
         "templates/secrets.tmpl",
         {
-            "VMANAGE_USERNAME": _base64encode(awi_config.AWI_VMANAGE_USERNAME),
-            "VMANAGE_PASSWORD": _base64encode(awi_config.AWI_VMANAGE_PASSWORD),
+            "CATALYST_SDWAN_USERNAME": _base64encode(awi_config.AWI_CATALYST_SDWAN_USERNAME),
+            "CATALYST_SDWAN_PASSWORD": _base64encode(awi_config.AWI_CATALYST_SDWAN_PASSWORD),
             "K8S_CTX": _base64encodeFile(awi_config.AWI_K8S_CTX_FILE),
             "AWS_CREDS": _base64encodeFile(awi_config.AWI_AWS_CREDENTIALS_FILE),
             "GCP_CREDS": _base64encodeFile(awi_config.AWI_GCP_CREDENTIALS_FILE),

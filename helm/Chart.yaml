@@ -1,0 +1,9 @@
+apiVersion: v2
+name: awi
+description: A Helm chart for App Net Interface project
+version: 0.1.0
+appVersion: "0.1"
+dependencies:
+  - name: Catalyst-SDWAN-AWI-Plugin
+    version: 0.1.0
+    repository: "file://../kube-awi/chart"

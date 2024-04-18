@@ -1,0 +1,32 @@
+version: "0.1"
+
+registry:
+  address: "ghcr.io/app-net-interface"
+  isPrivate: true
+  registryName: ausm-private-registry
+
+components:
+  ui: true
+  awiInfraGuard: true
+
+configs:
+  ui:
+    port: 5001
+    targetPort: 80
+  awiInfraGuard:
+    port: 50052
+    targetPort: 50052
+  envoyProxy:
+    tag: "v1.29.3"
+    port: 80
+    targetPort: 80
+
+Catalyst-SDWAN-AWI-Plugin:
+  version: "0.1"
+
+  registry:
+    address: "ghcr.io/app-net-interface"
+
+  config:
+    connector: awi
+    hostname: 0.0.0.0
