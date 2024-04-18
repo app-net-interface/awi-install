@@ -1,6 +1,6 @@
 dependencies:
-- name: awi-operator
-  repository: file://../awi-operator
+- name: Catalyst-SDWAN-AWI-Plugin
+  repository: file://../kube-awi/chart
   version: 0.1.0
-digest: sha256:21a913979011049b01df10cd8750fcf9f8296d0c1421018beb3821be89658132
-generated: "2024-04-08T19:06:52.226409283+02:00"
+digest: sha256:a7e81d7ae2bd46c1ea124b0d3addd5621baebefe78cea08b2d1a3fd6a8fbb141
+generated: "2024-04-18T14:51:33.633642028+02:00"

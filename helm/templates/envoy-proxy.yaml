@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: envoy-proxy-config
+  name: awi-envoy-proxy-config
 data:
   envoy.yaml: |
     admin:
@@ -142,7 +142,7 @@ data:
                       address:
                         socket_address:
                           address: awi-grpc-catalyst-sdwan
-                          port_value: {{ .Values.configs.awiGrpcCatalystSdwan.port }}
+                          port_value: {{ index .Values "Catalyst-SDWAN-AWI-Plugin" "config" "port" }}
         - name: awi_infra_guard_cluster
           connect_timeout: 0.25s
           type: logical_dns
@@ -163,16 +163,16 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: envoy-proxy
+  name: awi-envoy-proxy
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: envoy-proxy
+      app: awi-envoy-proxy
   template:
     metadata:
       labels:
-        app: envoy-proxy
+        app: awi-envoy-proxy
     spec:
       containers:
       - name: envoy-proxy
@@ -183,7 +183,7 @@ spec:
       volumes:
       - name: config-volume
         configMap:
-          name: envoy-proxy-config
+          name: awi-envoy-proxy-config
           items:
           - key: envoy.yaml
             path: envoy.yaml
@@ -193,11 +193,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: envoy-proxy
+  name: awi-envoy-proxy
 spec:
   type: LoadBalancer
   selector:
-    app: envoy-proxy
+    app: awi-envoy-proxy
   ports:
     - name: envoy-proxy-front
       protocol: TCP

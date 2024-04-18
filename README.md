@@ -90,90 +90,16 @@ named as described below.
 
 ### Catalyst SDWAN Credentials
 
-Needed when App Net Interface uses Catalyst SDWAN as a connector
+The AWI application requires the same secrets as one described in
+[this README](kube-awi/README.md).
 
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: catalyst-sdwan-credentials
-type: Opaque
-data:
-  username: "{CATALYST_SDWAN_USERNAME}"
-  password: "{CATALYST_SDWAN_PASSWORD}"
-```
-
-### Provider specific credentials
-
-If the App Net Interface connector is set to AWI, the administrator
-needs to provide secrets required for using AWS/GCP providers.
-
-The AWS secret currently expects base64 encoded `credentials` file
-such as `$HOME/.aws/credentials`:
-
-```ini
-[default]
-aws_access_key_id = KEY
-aws_secret_access_key = VALUE
-```
-
-and such base64 encoded file should be placed inside a following secret:
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: aws-credentials
-type: Opaque
-data:
-  credentials: "{FILE_ENCODED}"
-```
-
-Similarly, GCP credentials also require base64 encoded file, which can be
-found under `$HOME/.config/gcloud`. The example file content:
-
-**Service Account is required.**
-
-```json
-{
-  "client_email": "CLIENT_EMAIL",
-  "client_id": "CLIENT_ID",
-  "private_key": "PRIVATE_KEY",
-  "private_key_id": "PRIVATE_KEY_ID",
-  "token_uri": "TOKEN_URI",
-  "type": "service_account"
-}
-```
-
-And such base64 encoded file should be put in following secret:
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: gcp-credentials
-type: Opaque
-data:
-  gcp-key.json: "{FILE_ENCODED}"
-```
-
-### Cluster Context
-
-If the administrator wants App Net Interface to be able to interact with
-k8s cluster (discovery process or creating connections to pods) the kubeconfig
-file needs to be provided as a secret (base64 encoded):
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: kube-config
-type: Opaque
-data:
-  config: "{FILE_ENCODED}"
-```
+If the domain connector is set to AWI, the Catalyst SDWAN Controller
+credentials may be left empty, but provider specific credentials are
+necessary.
 
 ### UI Credentials
+
+Installing AWI introduces another set of credentials for AWI-UI.
 
 Currently, UI credentials are completely optional even if UI
 is spawned. The UI expects:
@@ -246,58 +172,17 @@ helm install awi . --namespace awi-system
 
 The AWI project consists of two charts:
 
-1. main chart - the chart containing manifests for most of AWI components that include:
+1. operator chart - the chart used for deploying `kube-awi` chart which spawns AWI
+    Catalyst SDWAN Controller along with the k8s operator
 
-    * AWI GRPC Catalyst Sdwan - the main operational controller
-    * AWI Infra Guard - component responsible for setting connections using AWI connector
+1. awi chart - the chart containing manifests for additional components, namely:
+
+    * AWI Infra Guard - component responsible for visibility, required by CLI and UI
+
     * AWI UI - the front-end for the application
+
     * Envoy Proxy - a proxy image for forwarding requests to proper targets and handling
         WebGRPC protocol used by the UI
-
-1. operator chart - the second chart responsible for kube-awi component that allows
-    spawning k8s operator and necessary CRDs
-
-## Building
-
-Creating a new `main chart` simply requires updating templates, `Chart.yaml` and `values.yaml`
-according to your needs, however `operator chart` involves a few different steps.
-
-### Operator Chart
-
-The `operator chart` is built automatically from the `kube-awi` repository using `helmify`
-tool. If the kube-awi repository did not change, there should be no need in rebuilding
-operator chart.
-
-If the operator chart needs to be refreshed:
-
-1. Initialize submodules to download kube-awi repository
-
-    ```
-    make init-submodules
-    ```
-
-1. Ensure kube-awi is recent
-
-    ```
-    cd kube-awi
-    git checkout main
-    git pull origin main
-    cd ..
-    ```
-
-1. Make sure kube-awi is kustomized accodringly to the project needs.  If not, enter
-    kube-awi directory, kustomize it and optionally commit changes.
-
-    The project's production kustomize configuration should be commited so this step
-    is mostly for building custom charts.
-
-1. Generate chart
-
-    ```
-    make build-operator-graph
-    ```
-
-1. Update `main chart` Chart.yaml with a new dependency version of your operator chart
 
 # Contributing
 
